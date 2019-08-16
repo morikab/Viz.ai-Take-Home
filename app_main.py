@@ -1,22 +1,20 @@
-from flask import Flask, request
+from flask import Flask
 
-app = Flask(__name__)
+from most_common_face import most_common_face_blueprint
 
 # TODO - improvements:
-#   * What responses to return in case of failures
-#   * Scale?
+#   * responses in case of failures
+#   * requirements.txt file
+#   * Logger
 #   * tests (empty picture list, picture with no faces, very long list, very loaded picture..)
 
 
-@app.route('/most-common-face', methods=['POST'])
-def most_common_face_route():
-    request_data = request.get_json()
-    if request_data is None:
-        pass  # TODO - throw indicative exception (like missing images list)
-    print(request_data)
-    return "test"
+def create_app():
+    app = Flask(__name__)
+    app.register_blueprint(most_common_face_blueprint)
+    return app
 
 
 if __name__ == '__main__':
-    # TODO - initialize Face Client and store in config
-    app.run(host='0.0.0.0', port=8001)  # TODO - move port to configuration
+    app = create_app()
+    app.run(host='0.0.0.0', port=8001)  # TODO - move port to server configuration
