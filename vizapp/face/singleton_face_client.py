@@ -3,18 +3,16 @@ from msrest.authentication import CognitiveServicesCredentials
 
 
 class SingletonFaceClient(object):
-    KEY = "a2671802fb6f40abaac8430b46a021e7"
-    ENDPOINT_STRING = "westeurope"
-    ENDPOINT = 'https://{}.api.cognitive.microsoft.com/'.format(ENDPOINT_STRING)
-
+    ENDPOINT_STRING_FORMAT = 'https://{}.api.cognitive.microsoft.com/'
     __instance = None
 
-    @staticmethod
-    def get_instance():
+    @classmethod
+    def get_instance(cls, config):
         if SingletonFaceClient.__instance is None:
-            # TODO - read values from config?
-            SingletonFaceClient.__instance = FaceClient(SingletonFaceClient.ENDPOINT,
-                                                        CognitiveServicesCredentials(SingletonFaceClient.KEY))
+            endpoint = cls.ENDPOINT_STRING_FORMAT.format(config['FACE_CLIENT_ENDPOINT_STRING'])
+            SingletonFaceClient.__instance = FaceClient(endpoint,
+                                                        CognitiveServicesCredentials(config['FACE_CLIENT_KEY']))
+
         return SingletonFaceClient.__instance
 
     def __init__(self):

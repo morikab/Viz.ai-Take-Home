@@ -1,9 +1,22 @@
 from collections import namedtuple
 
+from azure.cognitiveservices.vision.face.models import APIErrorException
+
 from vizapp.face.face_image import FaceImage
 from vizapp.request_exceptions import InvalidRequestDataFormat, MissingRequestDataKey, EmptyRequestData
 
 DetectedFaceImageTuple = namedtuple('DetectedFaceImageTuple', 'face, face_image')
+
+
+class MostCommonFaceError(Exception):
+    def __init__(self, message, exception=None):
+        super().__init__(message)
+        self.__exception = exception
+
+    def cause(self):
+        if self.__exception is not None:
+            return str(self.__exception)
+        return None
 
 
 class MostCommonFace(object):
@@ -13,7 +26,6 @@ class MostCommonFace(object):
 
         for face_image in face_images:
             with face_image.image_stream() as image_stream:
-                # TODO - wrap with try-catch (API error)
                 detected_faces = face_client.face.detect_with_stream(image_stream, return_face_id=True,
                                                                      return_face_landmarks=True)
                 for face in detected_faces:
@@ -46,14 +58,17 @@ class MostCommonFace(object):
                 }
 
     @staticmethod
-    def __format_empty_result():     # FIXME - unify formats?
+    def __format_empty_result():
         return {"image_filepath": None,
                 "face_id": None,
                 "face_rectangle": None}
 
     @staticmethod
     def __get_most_common_face_ids(face_client, detected_faces):
-        # TODO - handle case where number of faces is not supported by API (<2 | >1000)
+        if len(detected_faces) == 1:
+            # If there's only one face return its key
+            return detected_faces.keys()
+
         group_result = face_client.face.group(detected_faces.keys())
 
         if not group_result.groups:
@@ -84,14 +99,19 @@ class MostCommonFace(object):
     @staticmethod
     def most_common_face_from_image_filepaths(face_client, request_json_data):
         image_filepaths = MostCommonFace.__get_image_filepaths(request_json_data)
+        try:
+            face_images = [FaceImage(filepath) for filepath in image_filepaths]
+        except IOError as e:
+            raise MostCommonFaceError("Failed to load image file", e)
 
-        face_images = [FaceImage(filepath) for filepath in image_filepaths]
+        try:
+            detected_faces = MostCommonFace.__detect_faces(face_client, face_images)
+            if not detected_faces:
+                return MostCommonFace.__format_empty_result()
 
-        detected_faces = MostCommonFace.__detect_faces(face_client, face_images)
-        if not detected_faces:
-            return MostCommonFace.__format_empty_result()
+            most_common_face_ids = MostCommonFace.__get_most_common_face_ids(face_client, detected_faces)
+            best_detected_face = MostCommonFace.__find_best_face(most_common_face_ids, detected_faces)
 
-        most_common_face_ids = MostCommonFace.__get_most_common_face_ids(face_client, detected_faces)
-        best_detected_face = MostCommonFace.__find_best_face(most_common_face_ids, detected_faces)
-
-        return MostCommonFace.__format_result(best_detected_face)
+            return MostCommonFace.__format_result(best_detected_face)
+        except APIErrorException as e:
+            raise MostCommonFaceError("Face API error", e)

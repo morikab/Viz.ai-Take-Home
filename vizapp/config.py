@@ -8,3 +8,9 @@ class BaseConfig(object):
     LOGGING_LOCATION = 'app.log'
     LOGGING_LEVEL = logging.DEBUG
 
+
+class TestConfig(BaseConfig):
+    TESTING = True
+    LOGGING_LOCATION = 'test-app.log'
+
+

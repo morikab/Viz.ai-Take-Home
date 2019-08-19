@@ -1,33 +1,28 @@
 class InvalidRequestException(Exception):
-    pass
+    def __init__(self, message, cause=None):
+        super().__init__(message)
+        self.__cause = cause
+
+    def cause(self):
+        return self.__cause
 
 
 class MissingRequestJsonData(InvalidRequestException):
-    def __str__(self):
-        return "Missing json data in request"
+    def __init__(self):
+        super().__init__("Missing json data in request")
 
 
 class MissingRequestDataKey(InvalidRequestException):
     def __init__(self, key):
-        self.__key = key
-
-    def __str__(self):
-        return "Missing key '{}' in request json data".format(self.__key)
+        super().__init__("Missing request data key in json", "missing key: " + key)
 
 
 class InvalidRequestDataFormat(InvalidRequestException):
     def __init__(self, key, expected_type):
-        self.__key = key
-        self.__expected_type = expected_type
-
-    def __str__(self):
-        return "Request data format for key '{}' should be of type {}".format(self.__key, self.__expected_type)
+        super().__init__("Invalid request data format", "key '{}' should be of type {}".format(key, expected_type))
 
 
 class EmptyRequestData(InvalidRequestException):
     def __init__(self, key):
-        self.__key = key
-
-    def __str__(self):
-        return "Empty request data key '{}'".format(self.__key)
+        super().__init__("Empty request data key", "key: " + key)
 

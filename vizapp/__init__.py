@@ -4,10 +4,12 @@ from flask import Flask
 
 from vizapp.face.routes import face_blueprint
 
+BASE_CONFIG_OBJECT = 'vizapp.config.BaseConfig'
 
-def create_app(config_filename=None):
+
+def create_app(config_object=BASE_CONFIG_OBJECT, config_filename=None):
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object('vizapp.config.BaseConfig')
+    app.config.from_object(config_object)
     app.config.from_pyfile(config_filename)
     register_blueprints(app)
     configure_logger(app)
