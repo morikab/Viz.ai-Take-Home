@@ -1,13 +1,16 @@
-from app import create_app
+from vizapp import create_app
 
 if __name__ == '__main__':
-    app = create_app()
-    app.run(host='0.0.0.0', port=8001)  # TODO - move port to server configuration
-
+    app = create_app("config.cfg")
+    app.run(host=app.config['HOST'], port=app.config['PORT'])
 
 # TODO - improvements:
-#   * responses in case of failures  - How to test server side???
-#   * requirements.txt file
+#   * responses in case of failures  - How to test server side??? - Add error handlers -> handle all cases!
 #   * Logger
-#   * tests (picture with no faces, very long list (repeating image), very loaded picture..)
+#   * Configuration!!!!!!
+
+#   * requirements.txt file
+#   * README file
+#   * tests (picture with no faces, very loaded picture?, )
+#   * mock face_client for unit testing of most_common_face methods
 
