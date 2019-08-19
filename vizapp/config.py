@@ -11,6 +11,6 @@ class BaseConfig(object):
 
 class TestConfig(BaseConfig):
     TESTING = True
+    DEBUG = True
     LOGGING_LOCATION = 'test-app.log'
-
 

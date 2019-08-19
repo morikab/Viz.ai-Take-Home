@@ -9,7 +9,7 @@ face_blueprint = Blueprint('face', __name__)
 
 @face_blueprint.route('/most-common-face', methods=['POST'])
 def most_common_face():
-    current_app.logger.info('Handling new most-common-face request') # TODO - check this
+    current_app.logger.info('Handling new most-common-face request')
 
     request_json_data = request.get_json()
     if request_json_data is None:
